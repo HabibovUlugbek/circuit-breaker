@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "commonjs",
+    "outDir": "./lib",
+    "baseUrl": "./src",
+    "moduleResolution": "node",
+    "paths": {
+      "@enums": [
+        "./enums"
+      ],
+      "@helpers": [
+        "./helpers"
+      ],
+      "@services": [
+        "./services"
+      ],
+      "@interfaces": [
+        "./interfaces"
+      ],
+      "@interceptors": [
+        "./interceptors"
+      ]
+    },
+    "strict": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "importHelpers": true,
+    "removeComments": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "strictNullChecks": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
