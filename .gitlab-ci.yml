@@ -5,10 +5,8 @@ stages:
 
 publish:
   stage: publish
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   before_script:
-    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+    - echo "//registry.npmjs.org/:_authToken=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" > .npmrc
     - corepack enable
     - corepack prepare pnpm@latest --activate
     - pnpm config set store-dir .pnpm
