@@ -1,5 +1,5 @@
 {
-  "name": "nest-circuit-breaker",
+  "name": "@habibovulugbek/nest-circuit-breaker",
   "bugs": {
     "url": "https://gitlab.sello.uz/sello/common/backend/logger/-/issues",
     "email": "habibovulugbek22@gmail.com"
@@ -12,7 +12,7 @@
   "license": "MIT",
   "keywords": [
     "nestjs",
-    "logger"
+    "circuit-breaker"
   ],
   "homepage": "https://gitlab.sello.uz/sello/common/backend/logger",
   "repository": {
@@ -20,10 +20,7 @@
     "type": "git"
   },
   "description": "Circuit breaker for NestJS",
-  "publishConfig": {
-    "tag": "latest",
-    "access": "restricted"
-  },
+  
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
