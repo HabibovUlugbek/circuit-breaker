@@ -1,1 +1,1 @@
-export type { CircuitBreakerOptions } from "./circuit-breaker-options.interface";
+export type { CircuitBreakerOptions } from './circuit-breaker-options.interface'
