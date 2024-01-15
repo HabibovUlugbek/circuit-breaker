@@ -1,3 +1,5 @@
+import { CircuitBreakerState } from '@enums'
+
 export declare interface CircuitBreakerOptions {
   failureThresholdPercentage: number
   halfOpenThresholdPercentage: number
@@ -5,4 +7,6 @@ export declare interface CircuitBreakerOptions {
   rangeTime: number
   timeout: number
   statusCodes?: number[]
+  manual?: boolean
+  manualState?: CircuitBreakerState
 }

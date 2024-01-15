@@ -16,6 +16,8 @@ export class CircuitBreakerInterceptor implements NestInterceptor {
       halfOpenRequestCount: options.halfOpenRequestCount,
       rangeTime: options.rangeTime,
       timeout: options.timeout,
+      manual: options.manual,
+      manualState: options.manualState,
     })
     this.#_statusCodes = options.statusCodes
   }
