@@ -1,8 +1,8 @@
-name: CI
+name: Publish
 on:
   push:
     branches:
-      - '**'
+      - 'main'
 
 jobs:
   build:
@@ -12,10 +12,15 @@ jobs:
       - uses: pnpm/action-setup@v2
         with:
           version: 7
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 16.x
           cache: 'pnpm'
 
       - run: pnpm install --no-frozen-lockfile
-      - run: pnpm run ci
+      - name: Create Release Pull Request or Publish
+        with:
+          publish: pnpm run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

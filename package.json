@@ -8,7 +8,7 @@
     "name": "Habibov Ulugbek",
     "email": "habibovulugbek22@gmail.com"
   },
-  "version": "0.0.10",
+  "version": "0.0.11",
   "license": "MIT",
   "keywords": [
     "nestjs",
@@ -32,7 +32,8 @@
     "test": "jest --coverage",
     "build": "tsc --project ./tsconfig.build.json",
     "alias": "tsc-alias --project ./tsconfig.build.json",
-    "ci": "pnpm run fmt && pnpm run clean && pnpm run build && pnpm run alias"
+    "ci": "pnpm run fmt && pnpm run clean && pnpm run build && pnpm run alias",
+    "release": "pnpm run ci && pnpm publish --access public"
   },
   "dependencies": {
     "tslib": "^2.6.2"
