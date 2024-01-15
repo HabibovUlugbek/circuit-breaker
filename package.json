@@ -29,8 +29,10 @@
   "scripts": {
     "fmt": "eslint ./src --fix && prettier ./src --write",
     "clean": "rimraf ./lib",
+    "test": "jest --coverage",
     "build": "tsc --project ./tsconfig.build.json",
-    "alias": "tsc-alias --project ./tsconfig.build.json"
+    "alias": "tsc-alias --project ./tsconfig.build.json",
+    "ci": "pnpm run clean && pnpm run alias && pnpm run fmt && pnpm run build"
   },
   "dependencies": {
     "tslib": "^2.6.2"
