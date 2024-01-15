@@ -9,8 +9,8 @@ export class CircuitBreakerService {
   private nextAttempt = 0
   private checkStart: number
   private requestCount = 0
-  private readonly manualState: CircuitBreakerState
 
+  private readonly manualState: CircuitBreakerState
   private readonly failureThresholdPercentage: number
   private readonly halfOpenThresholdPercentage: number
   private readonly halfOpenRequestCount: number = 10
