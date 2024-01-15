@@ -4,8 +4,10 @@ on:
     branches:
       - 'main'
 
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,7 +19,7 @@ jobs:
           node-version: 16.x
           cache: 'pnpm'
 
-      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm install --frozen-lockfile
       - name: Create Release Pull Request or Publish
         with:
           publish: pnpm run release
