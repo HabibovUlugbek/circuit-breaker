@@ -19,7 +19,7 @@ jobs:
 
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm run ci
-      - run: pnpm run release
+      - run: pnpm run release --no-git-checks
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
