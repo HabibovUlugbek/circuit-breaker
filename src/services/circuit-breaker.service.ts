@@ -65,11 +65,13 @@ export class CircuitBreakerService {
   }
 
   changeState(state: CircuitBreakerState) {
+    console.log('==================================== State Changed ====================================')
     console.log('Changing State ' + 'from ' + this.state + ' to ' + state)
     console.log('RequestCount : ', this.requestCount)
     console.log('Failures :', this.failures)
     console.log('FailurePercentage :', this.calculateFailurePercentage())
-    console.log('NextAttempt :', this.nextAttempt)
+    console.log('Next Attempt :', new Date(this.nextAttempt).toLocaleTimeString())
+    console.log('=======================================================================================')
 
     this.state = state
     this.requestCount = 0
@@ -85,13 +87,6 @@ export class CircuitBreakerService {
         this.nextAttempt = 0
         break
     }
-
-    if (this.calculateFailurePercentage() > this.failureThresholdPercentage) {
-      this.state = CircuitBreakerState.OPEN
-      this.nextAttempt = Date.now() + this.timeout
-    } else {
-      this.reset()
-    }
   }
 
   recordRequest() {
@@ -104,7 +99,7 @@ export class CircuitBreakerService {
       } else {
         this.reset()
       }
-    } else {
+    } else if (timePassed > this.rangeTime * 1.2) {
       this.reset()
     }
 
@@ -123,6 +118,13 @@ export class CircuitBreakerService {
   }
 
   reset() {
+    console.log('==================================== State Reset to Closed ====================================')
+    console.log('Changing State ' + 'from ' + this.state + ' to ' + CircuitBreakerState.CLOSED)
+    console.log('RequestCount : ', this.requestCount)
+    console.log('Failures :', this.failures)
+    console.log('FailurePercentage :', this.calculateFailurePercentage())
+    console.log('rangeTime :', this.rangeTime)
+    console.log('=======================================================================================')
     this.state = CircuitBreakerState.CLOSED
     this.failures = 0
     this.nextAttempt = 0
