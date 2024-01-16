@@ -69,7 +69,7 @@ export class CircuitBreakerService {
     console.log('Changing State ' + 'from ' + this.state + ' to ' + state)
     console.log('RequestCount : ', this.requestCount)
     console.log('Failures :', this.failures)
-    console.log('FailurePercentage :', this.calculateFailurePercentage())
+    console.log('FailurePercentage :', this.calculateFailurePercentage() + '%')
     console.log('Next Attempt :', new Date(this.nextAttempt).toLocaleTimeString())
     console.log('=======================================================================================')
 
@@ -93,14 +93,16 @@ export class CircuitBreakerService {
     const now = Date.now()
     const timePassed = now - this.checkStart
 
-    if (timePassed > this.rangeTime && timePassed < this.rangeTime * 1.2) {
-      if (this.calculateFailurePercentage() > this.failureThresholdPercentage) {
-        this.changeState(CircuitBreakerState.OPEN)
-      } else {
+    if (this.state === CircuitBreakerState.CLOSED) {
+      if (timePassed > this.rangeTime && timePassed < this.rangeTime * 1.2) {
+        if (this.calculateFailurePercentage() > this.failureThresholdPercentage) {
+          this.changeState(CircuitBreakerState.OPEN)
+        } else {
+          this.reset()
+        }
+      } else if (timePassed > this.rangeTime * 1.2) {
         this.reset()
       }
-    } else if (timePassed > this.rangeTime * 1.2) {
-      this.reset()
     }
 
     this.requestCount += 1
@@ -119,11 +121,8 @@ export class CircuitBreakerService {
 
   reset() {
     console.log('==================================== State Reset to Closed ====================================')
-    console.log('Changing State ' + 'from ' + this.state + ' to ' + CircuitBreakerState.CLOSED)
+    console.log('State reset ' + 'to ' + CircuitBreakerState.CLOSED)
     console.log('RequestCount : ', this.requestCount)
-    console.log('Failures :', this.failures)
-    console.log('FailurePercentage :', this.calculateFailurePercentage())
-    console.log('rangeTime :', this.rangeTime)
     console.log('=======================================================================================')
     this.state = CircuitBreakerState.CLOSED
     this.failures = 0
