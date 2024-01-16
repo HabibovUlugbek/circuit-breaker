@@ -1,4 +1,5 @@
 export * from './enums'
 export * from './services'
 export * from './interceptors'
+export * from './constants'
 export type { CircuitBreakerOptions } from './interfaces'

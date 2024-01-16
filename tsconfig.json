@@ -18,6 +18,9 @@
       "@interfaces": [
         "./interfaces"
       ],
+      "@constants": [
+        "./constants"
+      ],
       "@interceptors": [
         "./interceptors"
       ]

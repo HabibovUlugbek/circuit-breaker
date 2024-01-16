@@ -1,5 +1,5 @@
 {
-  "name": "@habibovulugbek/nest-circuit-breaker",
+  "name": "circuit-breaker-nestjs",
   "bugs": {
     "url": "https://github.com/HabibovUlugbek/circuit-breaker/-/issues",
     "email": "habibovulugbek22@gmail.com"
@@ -8,11 +8,13 @@
     "name": "Habibov Ulugbek",
     "email": "habibovulugbek22@gmail.com"
   },
-  "version": "0.0.17",
+  "version": "0.1.0",
   "license": "MIT",
   "keywords": [
+    "nest",
     "nestjs",
     "interceptor",
+    "microservices",
     "circuit-breaker"
   ],
   "homepage": "https://github.com/HabibovUlugbek/circuit-breaker",
@@ -32,8 +34,7 @@
     "test": "jest --coverage",
     "build": "tsc --project ./tsconfig.build.json",
     "alias": "tsc-alias --project ./tsconfig.build.json",
-    "ci": "pnpm run fmt && pnpm run clean && pnpm run build && pnpm run alias",
-    "release": "pnpm run ci && pnpm publish --access public"
+    "ci": "pnpm run fmt && pnpm run clean && pnpm run build && pnpm run alias"
   },
   "dependencies": {
     "tslib": "^2.6.2"

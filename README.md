@@ -6,87 +6,131 @@ To install this package, run the following commands:
 
 ## Installation
 
-```bash
+```bash in pnpm
 $ pnpm add --save-prod @habibovulugbek/nest-circuit-breaker
 ```
 
-If you want to use the `RpcExceptionFilter`, `ExpressExceptionFilter` or `FastifyExceptionFilter` filter with the
-`ExceptionInterceptor` interceptor, you must install additional packages:
-
-```bash
-$ pnpm add --save-prod @nestjs/common reflect-metadata rxjs
+```bash in npm
+$ npm install --save-prod @habibovulugbek/nest-circuit-breaker
 ```
 
 ## Getting started
 
-You can use the `RpcExceptionFilter` filter with the `ExceptionInterceptor` interceptor in the `main.ts` file to handle
-all exceptions in the rpc application:
+You can use the `CircuitBreakerInterceptor` interceptor with the `useGlobalInterceptors` interceptor in the `main.ts`
+file to add a circuit breaker to all controllers:
 
 ```ts
-// main.ts
-import type { NatsOptions } from '@nestjs/microservices'
 import { NestFactory } from '@nestjs/core'
-import { Transport } from '@nestjs/microservices'
-import { RpcExceptionFilter, ExceptionInterceptor } from '@sello-lab/exceptions'
 import { AppModule } from './app.module'
+import { CircuitBreakerInterceptor } from '@habibovulugbek/nest-circuit-breaker'
 
-setImmediate(async (): Promise<void> => {
-  const app = await NestFactory.createMicroservice<NatsOptions>(AppModule, {
-    transport: Transport.NATS,
-    options: {
-      servers: ['nats://127.0.0.1:4222'],
-    },
-  })
-
-  app.useGlobalFilters(new RpcExceptionFilter())
-  app.useGlobalInterceptors(new ExceptionInterceptor())
-
-  await app.listen()
-})
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule)
+  app.useGlobalInterceptors(new CircuitBreakerInterceptor())
+  await app.listen(3000)
+}
 ```
 
-You can use the `ExpressExceptionFilter` filter with the `ExceptionInterceptor` interceptor in the `main.ts` file to
-handle all exceptions in the express application:
+Or you can use the `CircuitBreakerInterceptor` interceptor with the `useInterceptors` interceptor in the controller (for
+one controller):
 
 ```ts
-// main.ts
-import type { NestExpressApplication } from '@nestjs/platform-express'
-import { NestFactory } from '@nestjs/core'
-import { ExpressAdapter } from '@nestjs/platform-express'
-import { ExpressExceptionFilter, ExceptionInterceptor } from '@sello-lab/exceptions'
-import { AppModule } from './app.module'
+import { Controller, Get, UseInterceptors } from '@nestjs/common'
+import { CircuitBreakerInterceptor } from '@habibovulugbek/nest-circuit-breaker'
 
-setImmediate(async (): Promise<void> => {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, new ExpressAdapter())
-
-  app.useGlobalFilters(new ExpressExceptionFilter())
-  app.useGlobalInterceptors(new ExceptionInterceptor())
-
-  await app.listen(3000, '127.0.0.1')
-})
+@Controller()
+@UseInterceptors(CircuitBreakerInterceptor)
+export class AppController {
+  @Get()
+  getHello(): string {
+    return 'Hello World!'
+  }
+}
 ```
 
-You can use the `FastifyExceptionFilter` filter with the `ExceptionInterceptor` interceptor in the `main.ts` file to
-handle all exceptions in the fastify application:
+Or you can use the `CircuitBreakerInterceptor` interceptor with the `useInterceptors` interceptor in the controller (for
+one route):
 
 ```ts
-// main.ts
-import type { NestFastifyApplication } from '@nestjs/platform-fastify'
-import { NestFactory } from '@nestjs/core'
-import { FastifyAdapter } from '@nestjs/platform-fastify'
-import { FastifyExceptionFilter, ExceptionInterceptor } from '@sello-lab/exceptions'
-import { AppModule } from './app.module'
+import { Controller, Get, UseInterceptors } from '@nestjs/common'
+import { CircuitBreakerInterceptor } from '@habibovulugbek/nest-circuit-breaker'
 
-setImmediate(async (): Promise<void> => {
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter())
-
-  app.useGlobalFilters(new FastifyExceptionFilter())
-  app.useGlobalInterceptors(new ExceptionInterceptor())
-
-  await app.listen(3000, '127.0.0.1')
-})
+@Controller()
+export class AppController {
+  @Get()
+  @UseInterceptors(CircuitBreakerInterceptor)
+  getHello(): string {
+    return 'Hello World!'
+  }
+}
 ```
 
-There are **11 exceptions** in this package. You can use them in your project.
+Or you can use the `CircuitBreakerInterceptor` more flexible version interceptor with the `useInterceptors` interceptor
+in `main.ts` file:
+
+```ts
+import { NestFactory } from '@nestjs/core'
+import { AppModule } from './app.module'
+import { CircuitBreakerInterceptor } from '@habibovulugbek/nest-circuit-breaker'
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule)
+  app.useGlobalInterceptors(
+    new CircuitBreakerInterceptor({
+      failureThresholdPercentage: 50, // default 50
+      halfOpenThresholdPercentage: 60, // default 50
+      halfOpenRequestCount: 12, // default 10
+      rangeTime: 10000, // default 60000 (1 minute)
+      timeout: 50000, // default 5000 (5 seconds)
+    }),
+  )
+  await app.listen(3000)
+}
+```
+
+Or you can use the `CircuitBreakerInterceptor`interceptor for manually close service with the `useInterceptors`
+interceptor in `main.ts` file:
+
+```ts
+import { NestFactory } from '@nestjs/core'
+import { AppModule } from './app.module'
+import { CircuitBreakerInterceptor, CircuitBreakerState } from '@habibovulugbek/nest-circuit-breaker'
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule)
+  app.useGlobalInterceptors(
+    new CircuitBreakerInterceptor({
+      manual: true,
+      manualState: CircuitBreakerState.OPEN,
+    }),
+  )
+  await app.listen(3000)
+}
+```
+
+## Options
+
+| Option                      | Type                | Default                    | Description                                                                                                     |
+| --------------------------- | ------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| failureThresholdPercentage  | number              | 50                         | The percentage of failed requests that will trip the circuit into the OPEN state.                               |
+| halfOpenThresholdPercentage | number              | 50                         | The percentage of requests that must succeed in the HALF_OPEN state.                                            |
+| halfOpenRequestCount        | number              | 10                         | The number of requests that can go inside service for changing state to other state in the HALF_OPEN state.     |
+| timeout                     | number              | 5000                       | The time in milliseconds that the circuit breaker should wait before changing the state from OPEN to HALF_OPEN. |
+| rangeTime                   | number              | 60000                      | The time in milliseconds that the circuit breaker check failures.                                               |
+| manual                      | boolean             | false                      | The manual mode for circuit breaker.                                                                            |
+| manualState                 | CircuitBreakerState | CircuitBreakerState.CLOSED | The manual state for circuit breaker.                                                                           |
+
+## License
+
+Nest is [MIT licensed](LICENSE).
+
+## Support
+
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers.
+
+## Stay in touch
+
+- Author - [Habibov Ulugbek]
+- Email - [habibovulugbek22@gmail.com]
 
 Enjoy!

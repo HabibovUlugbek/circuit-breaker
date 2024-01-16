@@ -1,28 +1,36 @@
-# name: Publish
-# on:
-#   push:
-#     branches:
-#       - 'main'
+name: Publish to npm
 
-# concurrency: ${{ github.workflow }}-${{ github.ref }}
+on:
+  push:
+    branches:
+      - 'main'
 
-# jobs:
-#   publish:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v3
-#       - uses: pnpm/action-setup@v2
-#         with:
-#           version: 7
-#       - uses: actions/setup-node@v3
-#         with:
-#           node-version: 16.x
-#           cache: 'pnpm'
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-#       - run: pnpm install --no-frozen-lockfile
-#       - name: Create Release Pull Request or Publish
-#         with:
-#           publish: pnpm run release
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+
+      - name: Setup pnpm
+        run: npm install -g pnpm@7
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Run tests and build
+        run: pnpm run ci
+
+      - name: Publish to npm
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,61 +1,70 @@
 import { Injectable } from '@nestjs/common'
 import { CircuitBreakerState } from '@enums'
 import type { CircuitBreakerOptions } from '@interfaces'
+import {
+  FAILURE_THRESHOLD_PERCENTAGE,
+  HALF_OPEN_THRESHOLD_PERCENTAGE,
+  HALF_OPEN_REQUEST_COUNT,
+  RANGE_TIME,
+  TIMEOUT,
+  MANUAL,
+  MANUAL_STATE,
+} from '@constants'
 
 @Injectable()
 export class CircuitBreakerService {
-  private state: CircuitBreakerState = CircuitBreakerState.CLOSED
-  private failures = 0
-  private nextAttempt = 0
-  private checkStart: number
-  private requestCount = 0
+  #_state: CircuitBreakerState = CircuitBreakerState.CLOSED
+  #_failures = 0
+  #_nextAttempt = 0
+  #_requestCount = 0
+  #_checkStart: number = Date.now()
 
-  private readonly manualState: CircuitBreakerState
-  private readonly failureThresholdPercentage: number
-  private readonly halfOpenThresholdPercentage: number
-  private readonly halfOpenRequestCount: number = 10
-  private readonly rangeTime: number
-  private readonly timeout: number
-  private readonly manual: boolean = false
+  readonly #_manualState: CircuitBreakerState.CLOSED | CircuitBreakerState.OPEN
+  readonly #_failureThresholdPercentage: number
+  readonly #_halfOpenThresholdPercentage: number
+  readonly #_halfOpenRequestCount: number
+  readonly #_rangeTime: number
+  readonly #_timeout: number
+  readonly #_manual: boolean
 
   constructor(options: CircuitBreakerOptions) {
-    this.failureThresholdPercentage = options.failureThresholdPercentage
-    this.halfOpenThresholdPercentage = options.halfOpenThresholdPercentage
-    this.halfOpenRequestCount = options?.halfOpenRequestCount
-    this.rangeTime = options.rangeTime
-    this.timeout = options.timeout
-    this.manual = options.manual
-    this.manualState = options.manualState
+    this.#_failureThresholdPercentage = options?.failureThresholdPercentage ?? FAILURE_THRESHOLD_PERCENTAGE
+    this.#_halfOpenThresholdPercentage = options?.halfOpenThresholdPercentage ?? HALF_OPEN_THRESHOLD_PERCENTAGE
+    this.#_halfOpenRequestCount = options?.halfOpenRequestCount ?? HALF_OPEN_REQUEST_COUNT
+    this.#_rangeTime = options?.rangeTime ?? RANGE_TIME
+    this.#_timeout = options?.timeout ?? TIMEOUT
+    this.#_manual = options?.manual ?? MANUAL
+    this.#_manualState = options?.manualState ?? MANUAL_STATE
   }
 
   canCall(): boolean {
-    if (!this.manual) {
-      switch (this.state) {
+    if (!this.#_manual) {
+      switch (this.#_state) {
         case CircuitBreakerState.CLOSED:
           return true
         case CircuitBreakerState.OPEN:
-          if (Date.now() >= this.nextAttempt) {
-            this.changeState(CircuitBreakerState.HALF_OPEN)
+          if (Date.now() >= this.#_nextAttempt) {
+            this.#_changeState(CircuitBreakerState.HALF_OPEN)
             return true
           }
           return false
         case CircuitBreakerState.HALF_OPEN:
-          if (this.requestCount < this.halfOpenRequestCount) {
+          if (this.#_requestCount < this.#_halfOpenRequestCount) {
             return true
           }
 
-          if (this.requestCount >= this.halfOpenRequestCount) {
-            if (this.calculateFailurePercentage() >= this.halfOpenThresholdPercentage) {
-              this.changeState(CircuitBreakerState.OPEN)
+          if (this.#_requestCount >= this.#_halfOpenRequestCount) {
+            if (100 - this.#_calculateFailurePercentage() >= this.#_halfOpenThresholdPercentage) {
+              this.#_changeState(CircuitBreakerState.CLOSED)
               return false
             } else {
-              this.changeState(CircuitBreakerState.CLOSED)
+              this.#_changeState(CircuitBreakerState.OPEN)
               return true
             }
           }
       }
     } else {
-      switch (this.manualState) {
+      switch (this.#_manualState) {
         case CircuitBreakerState.CLOSED:
           return true
         case CircuitBreakerState.OPEN:
@@ -64,69 +73,69 @@ export class CircuitBreakerService {
     }
   }
 
-  changeState(state: CircuitBreakerState) {
-    console.log('==================================== State Changed ====================================')
-    console.log('Changing State ' + 'from ' + this.state + ' to ' + state)
-    console.log('RequestCount : ', this.requestCount)
-    console.log('Failures :', this.failures)
-    console.log('FailurePercentage :', this.calculateFailurePercentage() + '%')
-    console.log('Next Attempt :', new Date(this.nextAttempt).toLocaleTimeString())
-    console.log('=======================================================================================')
-
-    this.state = state
-    this.requestCount = 0
-    this.failures = 0
-    switch (state) {
-      case CircuitBreakerState.CLOSED:
-        this.nextAttempt = 0
-        break
-      case CircuitBreakerState.OPEN:
-        this.nextAttempt = Date.now() + this.timeout
-        break
-      case CircuitBreakerState.HALF_OPEN:
-        this.nextAttempt = 0
-        break
-    }
-  }
-
   recordRequest() {
     const now = Date.now()
-    const timePassed = now - this.checkStart
+    const timePassed = now - this.#_checkStart
 
-    if (this.state === CircuitBreakerState.CLOSED) {
-      if (timePassed > this.rangeTime && timePassed < this.rangeTime * 1.2) {
-        if (this.calculateFailurePercentage() > this.failureThresholdPercentage) {
-          this.changeState(CircuitBreakerState.OPEN)
+    if (this.#_state === CircuitBreakerState.CLOSED) {
+      if (timePassed > this.#_rangeTime && timePassed < this.#_rangeTime * 1.2) {
+        if (this.#_calculateFailurePercentage() > this.#_failureThresholdPercentage) {
+          this.#_changeState(CircuitBreakerState.OPEN)
         } else {
-          this.reset()
+          this.#_reset()
         }
-      } else if (timePassed > this.rangeTime * 1.2) {
-        this.reset()
+      } else if (timePassed > this.#_rangeTime * 1.2) {
+        this.#_reset()
       }
     }
 
-    this.requestCount += 1
-    if (this.requestCount === 1) {
-      this.checkStart = Date.now()
+    this.#_requestCount += 1
+    if (this.#_requestCount === 1) {
+      this.#_checkStart = Date.now()
     }
   }
 
   recordFailure() {
-    this.failures += 1
+    this.#_failures += 1
   }
 
-  calculateFailurePercentage(): number {
-    return (this.failures / this.requestCount) * 100
+  #_changeState(state: CircuitBreakerState) {
+    console.log('==================================== State Changed ====================================')
+    console.log('Changing State ' + 'from ' + this.#_state + ' to ' + state)
+    console.log('RequestCount : ', this.#_requestCount)
+    console.log('Failures :', this.#_failures)
+    console.log('FailurePercentage :', this.#_calculateFailurePercentage() + '%')
+    console.log('Next Attempt :', new Date(this.#_nextAttempt).toLocaleTimeString())
+    console.log('=======================================================================================')
+
+    this.#_state = state
+    this.#_requestCount = 0
+    this.#_failures = 0
+    switch (state) {
+      case CircuitBreakerState.CLOSED:
+        this.#_nextAttempt = 0
+        break
+      case CircuitBreakerState.OPEN:
+        this.#_nextAttempt = Date.now() + this.#_timeout
+        break
+      case CircuitBreakerState.HALF_OPEN:
+        this.#_nextAttempt = 0
+        break
+    }
   }
 
-  reset() {
+  #_calculateFailurePercentage(): number {
+    return (this.#_failures / this.#_requestCount) * 100
+  }
+
+  #_reset() {
     console.log('==================================== State Reset to Closed ====================================')
     console.log('State reset ' + 'to ' + CircuitBreakerState.CLOSED)
-    console.log('RequestCount : ', this.requestCount)
+    console.log('RequestCount : ', this.#_requestCount)
     console.log('=======================================================================================')
-    this.state = CircuitBreakerState.CLOSED
-    this.failures = 0
-    this.nextAttempt = 0
-    this.requestCount = 0
+    this.#_state = CircuitBreakerState.CLOSED
+    this.#_failures = 0
+    this.#_nextAttempt = 0
+    this.#_requestCount = 0
   }
 }
