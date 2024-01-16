@@ -7,11 +7,11 @@ To install this package, run the following commands:
 ## Installation
 
 ```bash in pnpm
-$ pnpm add --save-prod @habibovulugbek/nest-circuit-breaker
+$ pnpm add --save-prod circuit-breaker-nestjs
 ```
 
 ```bash in npm
-$ npm install --save-prod @habibovulugbek/nest-circuit-breaker
+$ npm install --save-prod circuit-breaker-nestjs
 ```
 
 ## Getting started
@@ -22,7 +22,7 @@ file to add a circuit breaker to all controllers:
 ```ts
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { CircuitBreakerInterceptor } from '@habibovulugbek/nest-circuit-breaker'
+import { CircuitBreakerInterceptor } from 'circuit-breaker-nestjs'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -36,7 +36,7 @@ one controller):
 
 ```ts
 import { Controller, Get, UseInterceptors } from '@nestjs/common'
-import { CircuitBreakerInterceptor } from '@habibovulugbek/nest-circuit-breaker'
+import { CircuitBreakerInterceptor } from 'circuit-breaker-nestjs'
 
 @Controller()
 @UseInterceptors(CircuitBreakerInterceptor)
@@ -53,7 +53,7 @@ one route):
 
 ```ts
 import { Controller, Get, UseInterceptors } from '@nestjs/common'
-import { CircuitBreakerInterceptor } from '@habibovulugbek/nest-circuit-breaker'
+import { CircuitBreakerInterceptor } from 'circuit-breaker-nestjs'
 
 @Controller()
 export class AppController {
@@ -71,7 +71,7 @@ in `main.ts` file:
 ```ts
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { CircuitBreakerInterceptor } from '@habibovulugbek/nest-circuit-breaker'
+import { CircuitBreakerInterceptor } from 'circuit-breaker-nestjs'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -94,7 +94,7 @@ interceptor in `main.ts` file:
 ```ts
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { CircuitBreakerInterceptor, CircuitBreakerState } from '@habibovulugbek/nest-circuit-breaker'
+import { CircuitBreakerInterceptor, CircuitBreakerState } from 'circuit-breaker-nestjs'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
