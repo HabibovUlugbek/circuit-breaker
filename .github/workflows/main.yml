@@ -1,4 +1,4 @@
-name: Publish to npm CI
+name: CI
 
 on:
   push:
@@ -29,6 +29,8 @@ jobs:
 
       - name: Publish to npm
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: npm publish
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
