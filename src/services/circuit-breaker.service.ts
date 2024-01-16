@@ -35,21 +35,24 @@ export class CircuitBreakerService {
           return true
         case CircuitBreakerState.OPEN:
           if (Date.now() >= this.nextAttempt) {
-            this.state = CircuitBreakerState.HALF_OPEN
+            this.changeState(CircuitBreakerState.HALF_OPEN)
             return true
           }
           return false
         case CircuitBreakerState.HALF_OPEN:
-          if (
-            this.requestCount >= this.halfOpenRequestCount &&
-            this.calculateFailurePercentage() > this.halfOpenThresholdPercentage
-          ) {
-            this.state = CircuitBreakerState.OPEN
-            this.nextAttempt = Date.now() + this.timeout
-            this.failures = 0
-            this.requestCount = 0
-            return false
-          } else return true
+          if (this.requestCount < this.halfOpenRequestCount) {
+            return true
+          }
+
+          if (this.requestCount >= this.halfOpenRequestCount) {
+            if (this.calculateFailurePercentage() >= this.halfOpenThresholdPercentage) {
+              this.changeState(CircuitBreakerState.OPEN)
+              return false
+            } else {
+              this.changeState(CircuitBreakerState.CLOSED)
+              return true
+            }
+          }
       }
     } else {
       switch (this.manualState) {
@@ -61,16 +64,31 @@ export class CircuitBreakerService {
     }
   }
 
-  changeState() {
+  changeState(state: CircuitBreakerState) {
+    console.log('Changing State ' + 'from ' + this.state + ' to ' + state)
     console.log('RequestCount : ', this.requestCount)
     console.log('Failures :', this.failures)
     console.log('FailurePercentage :', this.calculateFailurePercentage())
-    console.log('State :', this.state)
+    console.log('NextAttempt :', this.nextAttempt)
+
+    this.state = state
+    this.requestCount = 0
+    this.failures = 0
+    switch (state) {
+      case CircuitBreakerState.CLOSED:
+        this.nextAttempt = 0
+        break
+      case CircuitBreakerState.OPEN:
+        this.nextAttempt = Date.now() + this.timeout
+        break
+      case CircuitBreakerState.HALF_OPEN:
+        this.nextAttempt = 0
+        break
+    }
+
     if (this.calculateFailurePercentage() > this.failureThresholdPercentage) {
       this.state = CircuitBreakerState.OPEN
       this.nextAttempt = Date.now() + this.timeout
-      this.failures = 0
-      this.requestCount = 0
     } else {
       this.reset()
     }
@@ -80,9 +98,13 @@ export class CircuitBreakerService {
     const now = Date.now()
     const timePassed = now - this.checkStart
 
-    if (timePassed > this.rangeTime && timePassed < this.rangeTime * 1.5) {
-      this.changeState()
-    } else if (timePassed > 1.5 * this.rangeTime) {
+    if (timePassed > this.rangeTime && timePassed < this.rangeTime * 1.2) {
+      if (this.calculateFailurePercentage() > this.failureThresholdPercentage) {
+        this.changeState(CircuitBreakerState.OPEN)
+      } else {
+        this.reset()
+      }
+    } else {
       this.reset()
     }
 
