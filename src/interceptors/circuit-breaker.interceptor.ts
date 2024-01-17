@@ -1,4 +1,11 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpException, HttpStatus } from '@nestjs/common'
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  HttpStatus,
+  ServiceUnavailableException,
+} from '@nestjs/common'
 import { Observable, throwError } from 'rxjs'
 import { catchError } from 'rxjs/operators'
 import { CircuitBreakerService } from '@services'
@@ -24,7 +31,7 @@ export class CircuitBreakerInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     if (!this.#_circuitBreaker.canCall()) {
-      throw new HttpException('Service temporarily unavailable', HttpStatus.SERVICE_UNAVAILABLE)
+      throw new ServiceUnavailableException('Service temporarily unavailable')
     }
 
     this.#_circuitBreaker.recordRequest()
@@ -32,7 +39,7 @@ export class CircuitBreakerInterceptor implements NestInterceptor {
     return next.handle().pipe(
       catchError((error) => {
         if (!this.#_circuitBreaker.canCall()) {
-          throw new HttpException('Service temporarily unavailable,', HttpStatus.SERVICE_UNAVAILABLE)
+          throw new ServiceUnavailableException('Service temporarily unavailable')
         }
         const status = error.getStatus()
 

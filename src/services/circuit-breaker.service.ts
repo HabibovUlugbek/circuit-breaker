@@ -44,6 +44,8 @@ export class CircuitBreakerService {
           return true
         case CircuitBreakerState.OPEN:
           if (Date.now() >= this.#_nextAttempt) {
+            this.#_requestCount = 0
+            this.#_failures = 0
             this.#_changeState(CircuitBreakerState.HALF_OPEN)
             return true
           }
@@ -105,7 +107,6 @@ export class CircuitBreakerService {
     console.log('RequestCount : ', this.#_requestCount)
     console.log('Failures :', this.#_failures)
     console.log('FailurePercentage :', this.#_calculateFailurePercentage() + '%')
-    console.log('Next Attempt :', new Date(this.#_nextAttempt).toLocaleTimeString())
     console.log('=======================================================================================')
 
     this.#_state = state
@@ -120,11 +121,13 @@ export class CircuitBreakerService {
         break
       case CircuitBreakerState.HALF_OPEN:
         this.#_nextAttempt = 0
+        this.#_checkStart = Date.now()
         break
     }
   }
 
   #_calculateFailurePercentage(): number {
+    if (this.#_requestCount === 0) return 0
     return (this.#_failures / this.#_requestCount) * 100
   }
 
@@ -132,10 +135,13 @@ export class CircuitBreakerService {
     console.log('==================================== State Reset to Closed ====================================')
     console.log('State reset ' + 'to ' + CircuitBreakerState.CLOSED)
     console.log('RequestCount : ', this.#_requestCount)
+    console.log('Start Time : ', new Date(this.#_checkStart).toLocaleTimeString())
+    console.log('End Time : ', new Date(Date.now()).toLocaleTimeString())
     console.log('=======================================================================================')
     this.#_state = CircuitBreakerState.CLOSED
     this.#_failures = 0
     this.#_nextAttempt = 0
     this.#_requestCount = 0
+    this.#_checkStart = Date.now()
   }
 }

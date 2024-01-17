@@ -82,6 +82,7 @@ async function bootstrap() {
       halfOpenRequestCount: 12, // default 10
       rangeTime: 10000, // default 60000 (1 minute)
       timeout: 50000, // default 5000 (5 seconds)
+      statusCodes: [500, 501, 502, 503, 504, 505], // default [500, 501, 502, 503, 504, 505]
     }),
   )
   await app.listen(3000)
@@ -119,6 +120,7 @@ async function bootstrap() {
 | rangeTime                   | number              | 60000                      | The time in milliseconds that the circuit breaker check failures.                                               |
 | manual                      | boolean             | false                      | The manual mode for circuit breaker.                                                                            |
 | manualState                 | CircuitBreakerState | CircuitBreakerState.CLOSED | The manual state for circuit breaker.                                                                           |
+| statusCodes                 | number[]            | 500>=                      | The status codes that will considire as error.                                                                  |
 
 ## License
 
